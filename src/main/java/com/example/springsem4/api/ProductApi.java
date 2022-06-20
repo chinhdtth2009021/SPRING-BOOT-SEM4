@@ -1,69 +1,63 @@
 package com.example.springsem4.api;
 
 import com.example.springsem4.entity.Product;
+import com.example.springsem4.service.ProductService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping(path = "api/v1/products")
 public class ProductApi {
-    private static List<Product> products = new ArrayList<>();
-
+    @Autowired
+    ProductService productService;
     @RequestMapping(method = RequestMethod.GET)
-    public List<Product> findAll() {
-        return products;
+    public ResponseEntity<List<Product>> findAll(){
+        return ResponseEntity.ok(productService.findAll());
     }
 
     @RequestMapping(method = RequestMethod.GET, path = "{id}")
-    public Product findById(@PathVariable int id) {
-        int foundIndex = -1;
-        for (int i = 0; i < products.size(); i++) {
-            if (products.get(i).getId() == id){
-                foundIndex = i;
-            }
+    public ResponseEntity<?> findById(@PathVariable int id) {
+        Optional<Product> product = productService.findById(id);
+        if (!product.isPresent()){
+            ResponseEntity.badRequest().build();// khoong co du lieu tra ve
         }
-        if (foundIndex == -1){
-            return null;
-        }
-        return products.get(foundIndex);
+        return ResponseEntity.ok(product.get());//cos du lieu tra ve
     }
 
     @RequestMapping(method = RequestMethod.POST)
-    public Product save(@RequestBody Product product){
-        products.add(product);
-        return product;
+    public ResponseEntity<Product> save(@RequestBody Product product){
+        return ResponseEntity.ok(productService.save(product));
     }
 
     @RequestMapping(method = RequestMethod.PUT, path = "{id}")
-    public Product update(@PathVariable int id, @RequestBody Product updateProduct){
-        int fountIndex = -1;
-        for (int i = 0; i < products.size(); i++) {
-            if (products.get(id).getId() == id){
-                fountIndex = i;
-            }
+    public ResponseEntity<Product> update(@PathVariable int id, @RequestBody Product updateProduct){
+        Optional<Product> product = productService.findById(id);//tim product theo id
+        if (!product.isPresent()){
+            ResponseEntity.badRequest().build();// khoong co du lieu tra ve
         }
-        if (fountIndex == -1){
-            return null;
-        }
-        products.get(fountIndex).setName(updateProduct.getName());
-        products.get(fountIndex).setDescription(updateProduct.getDescription());
-        return products.get(fountIndex);
+        Product exitsProduct = product.get();
+        exitsProduct.setName(updateProduct.getName());
+        exitsProduct.setSlug(updateProduct.getSlug());
+        exitsProduct.setDescription(updateProduct.getDescription());
+        exitsProduct.setThumbnail(updateProduct.getThumbnail());
+        exitsProduct.setStatus(updateProduct.getStatus());
+        return ResponseEntity.ok(productService.save(exitsProduct));//cos du lieu tra ve
     }
 
         @RequestMapping(method = RequestMethod.DELETE, path = "{id}")
-    public Product update(@PathVariable int id){
-        int fountIndex = -1;
-        for (int i = 0; i < products.size(); i++) {
-            if (products.get(id).getId() == id){
-                fountIndex = i;
+        public ResponseEntity<?> delete(@PathVariable int id){
+            Optional<Product> product = productService.findById(id);//tim product theo id
+            if (!product.isPresent()){
+                ResponseEntity.badRequest().build();// khoong co du lieu tra ve
             }
+            productService.deleteById(id);
+            return ResponseEntity.ok().build();//cos du lieu tra ve
+
         }
-        if (fountIndex == -1){
-            return null;
-        }
-        products.remove(fountIndex);
-        return null;
-    }
+
 }
