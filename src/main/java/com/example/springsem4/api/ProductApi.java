@@ -12,6 +12,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping(path = "api/v1/products")
+@CrossOrigin("*")
 public class ProductApi {
     @Autowired
     ProductService productService;
@@ -57,7 +58,5 @@ public class ProductApi {
             }
             productService.deleteById(id);
             return ResponseEntity.ok().build();//cos du lieu tra ve
-
         }
-
 }
